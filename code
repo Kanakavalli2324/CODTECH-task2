@@ -1,0 +1,87 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+df=pd.read_csv("data.csv")
+df.head()
+df.tail()
+
+df.info()
+df.describe()
+df.columns
+
+df.drop_duplicates(inplace=True)
+df.info()
+
+df.isnull().sum()
+
+df.isnull().sum().sum()
+
+df.dropna(inplace=True)
+df.info()
+
+df.drop(columns=['Engine Fuel Type', 'Market Category', 'Vehicle Style', 'Popularity', 'Number of Doors', 'Vehicle Size'],axis=1,inplac
+df.rename(columns={"MSRP":"Price"},inplace=True)
+
+df.describe()
+df['Make'].value_counts()
+
+plt.figure(figsize=(20,7))
+plt.margins(y=0.3)
+plt.xticks(rotation=45)
+
+plt.xlabel("Maker")
+plt.ylabel("No.of cars")
+sns.histplot(data=df,x="Make",hue="Year")
+
+plt.figure(figsize=(20,6))
+plt.margins(y=0.3)
+plt.subplot(1,3,1)
+sns.boxplot(x=df["Engine HP"],color="Blue",width=0.5)
+plt.subplot(1,3,2)
+sns.boxplot(x=df["highway MPG"],color="green",width=0.5)
+plt.subplot(1,3,3)
+sns.boxplot(x=df["Price"],color="red",width=0.5)
+
+plt.figure(figsize=(20,6))
+plt.margins(y=0.3)
+plt.subplot(1,3,1)
+sns.scatterplot(data=df,x='Engine HP',y='Price')
+
+plt.figure(figsize=(20,6))
+plt.margins(y=0.3)
+df1=df[['Year','Engine HP',	'Engine Cylinders',	'highway MPG',	'city mpg',	'Price']]
+c= df1.corr()
+sns.heatmap(c,cmap="BrBG",annot=True)
+
+df['Transmission Type'].unique()
+df1=df.join(pd.get_dummies(df['Transmission Type'],dtype=int))
+df1
+
+df1['Driven_Wheels'].unique()
+
+df1.drop(['all wheel drive','four wheel drive','front wheel drive','rear wheel drive'],axis=1,inplace=True)
+df2=df1.join(pd.get_dummies(df1['Driven_Wheels'],dtype=int))
+
+df2.drop(['Driven_Wheels'],axis=1,inplace=True)
+df2.drop(['Model','Make'],axis=1,inplace=True)
+from sklearn.model_selection import train_test_split
+
+x=df2.drop(['Price'],axis=1)
+y=df2['Price']
+xtr,xte,ytr,yte=train_test_split(x,y,test_size=0.2)
+traindata=xtr.join(ytr)
+traindata
+
+from sklearn.linear_model import LinearRegression
+reg=LinearRegression()
+x_train,y_train=traindata.drop(['Price'],axis=1),traindata['Price']
+
+reg.fit(x_train,y_train)
+
+testdata=xte.join(yte)
+x_test,y_test=testdata.drop(['Price'],axis=1),testdata['Price']
+
+reg.score(x_test,y_test)
